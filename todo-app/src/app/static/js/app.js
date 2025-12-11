@@ -320,3 +320,41 @@ document.body.addEventListener('htmx:configRequest', (evt) => {
     evt.detail.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
     evt.detail.headers['Pragma'] = 'no-cache';
 });
+
+// Update browser tab title with incomplete todo count
+function updatePageTitle() {
+    const listContent = document.getElementById('list-content');
+    if (!listContent) {
+        document.title = 'Todo App';
+        return;
+    }
+    
+    const listName = listContent.dataset.listName || 'My Tasks';
+    const listId = listContent.dataset.listId;
+    
+    if (!listId) {
+        document.title = `${listName} - Todo App`;
+        return;
+    }
+    
+    // Get the count from the sidebar
+    const countElement = document.getElementById(`list-${listId}-count`);
+    const count = countElement ? parseInt(countElement.textContent) : 0;
+    
+    if (count > 0) {
+        document.title = `(${count}) ${listName} - Todo App`;
+    } else {
+        document.title = `${listName} - Todo App`;
+    }
+}
+
+// Update title when page loads
+document.addEventListener('DOMContentLoaded', updatePageTitle);
+
+// Update title after HTMX swaps (when content or count changes)
+document.body.addEventListener('htmx:afterSwap', (evt) => {
+    // Update title when main content changes or when counts update
+    if (evt.detail.target.id === 'main-content' || evt.detail.target.id?.includes('-count')) {
+        updatePageTitle();
+    }
+});
